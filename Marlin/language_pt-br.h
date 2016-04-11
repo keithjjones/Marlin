@@ -45,6 +45,7 @@
 #define MSG_LEVEL_BED_HOMING                "Homing XYZ"
 #define MSG_LEVEL_BED_WAITING               "Click to Begin"
 #define MSG_LEVEL_BED_DONE                  "Leveling Done!"
+#define MSG_LEVEL_BED_CANCEL                "Cancel"
 #define MSG_SET_HOME_OFFSETS                "Ajustar Jogo"
 #define MSG_HOME_OFFSETS_APPLIED            "Offsets applied"
 #define MSG_SET_ORIGIN                      "Ajustar orig."
@@ -149,6 +150,20 @@
 #define MSG_ENDSTOP_ABORT                   "Fim de Curso"
 #define MSG_END_HOUR                        "Horas"
 #define MSG_END_MINUTE                      "Minutos"
+
+#define MSG_BED_Z                           "Base Z"
+#define MSG_A_TRAVEL                        "A-movimento"
+#define MSG_HEATING_FAILED_LCD              "Aquecimento falhou"
+#define MSG_ERR_REDUNDANT_TEMP              "Err: REDUNDANT TEMP"
+#define MSG_THERMAL_RUNAWAY                 "THERMAL RUNAWAY"
+#define MSG_ERR_MAXTEMP                     "Err: T Maxima"
+#define MSG_ERR_MINTEMP                     "Err: T Minima"
+#define MSG_ERR_MAXTEMP_BED                 "Err: T Base Maxima"
+#define MSG_ERR_MINTEMP_BED                 "Err: T Base Minima"
+#define MSG_HEATING                         "Aquecendo..."
+#define MSG_HEATING_COMPLETE                "Aquecida."
+#define MSG_BED_HEATING                     "Aquecendo base.."
+#define MSG_BED_DONE                        "Base aquecida."
 
 #if ENABLED(DELTA_CALIBRATION_MENU)
   #define MSG_DELTA_CALIBRATE               "Calibrar Delta"
