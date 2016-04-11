@@ -394,11 +394,9 @@ const bool X_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 const bool Y_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
 const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
 const bool Z_MIN_PROBE_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
-<<<<<<< HEAD
-#define DISABLE_MAX_ENDSTOPS
+
+//#define DISABLE_MAX_ENDSTOPS
 //#define DISABLE_MIN_ENDSTOPS
-=======
->>>>>>> 02550af7c3a5a17ee158a620c3625299c75876b6
 
 //===========================================================================
 //============================= Z Probe Options =============================
