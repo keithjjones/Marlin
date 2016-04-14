@@ -18,3 +18,4 @@ applet/
 *.s
 *.i
 *.ii
+*.hex
