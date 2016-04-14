@@ -322,16 +322,16 @@ static uint8_t target_extruder;
 // Extruder offsets
 #if EXTRUDERS > 1
   #ifndef EXTRUDER_OFFSET_X
-    #define EXTRUDER_OFFSET_X { 0 }
+    #define EXTRUDER_OFFSET_X { 0 } // X offsets for each extruder
   #endif
   #ifndef EXTRUDER_OFFSET_Y
-    #define EXTRUDER_OFFSET_Y { 0 }
+    #define EXTRUDER_OFFSET_Y { 0 } // Y offsets for each extruder
   #endif
   float extruder_offset[][EXTRUDERS] = {
     EXTRUDER_OFFSET_X,
     EXTRUDER_OFFSET_Y
     #if ENABLED(DUAL_X_CARRIAGE)
-      , { 0 } // supports offsets in XYZ plane
+      , { 0 } // Z offsets for each extruder
     #endif
   };
 #endif
@@ -484,6 +484,20 @@ void serial_echopair_P(const char* s_P, double v)        { serialprintPGM(s_P); 
 void serial_echopair_P(const char* s_P, unsigned long v) { serialprintPGM(s_P); SERIAL_ECHO(v); }
 
 void gcode_M114();
+
+#if ENABLED(DEBUG_LEVELING_FEATURE)
+  void print_xyz(const char* prefix, const float x, const float y, const float z) {
+    SERIAL_ECHO(prefix);
+    SERIAL_ECHOPAIR(": (", x);
+    SERIAL_ECHOPAIR(", ", y);
+    SERIAL_ECHOPAIR(", ", z);
+    SERIAL_ECHOLNPGM(")");
+  }
+  void print_xyz(const char* prefix, const float xyz[]) {
+    print_xyz(prefix, xyz[X_AXIS], xyz[Y_AXIS], xyz[Z_AXIS]);
+  }
+  #define DEBUG_POS(PREFIX,VAR) do{ SERIAL_ECHOPGM(PREFIX); print_xyz(" > " STRINGIFY(VAR), VAR); }while(0)
+#endif
 
 #if ENABLED(DELTA) || ENABLED(SCARA)
   inline void sync_plan_position_delta() {
@@ -715,11 +729,6 @@ void servo_init() {
  */
 void setup() {
 
-  #if ENABLED(DELTA) || ENABLED(SCARA)
-    // Vital to init kinematic equivalent for X0 Y0 Z0
-    sync_plan_position_delta();
-  #endif
-
   #ifdef DISABLE_JTAG
     // Disable JTAG on AT90USB chips to free up pins for IO
     MCUCR = 0x80;
@@ -778,6 +787,11 @@ void setup() {
 
   tp_init();    // Initialize temperature loop
   plan_init();  // Initialize planner;
+
+  #if ENABLED(DELTA) || ENABLED(SCARA)
+    // Vital to init kinematic equivalent for X0 Y0 Z0
+    sync_plan_position_delta();
+  #endif
 
   #if ENABLED(USE_WATCHDOG)
     watchdog_init();
@@ -1176,20 +1190,6 @@ XYZ_CONSTS_FROM_CONFIG(signed char, home_dir, HOME_DIR);
 
 #endif //DUAL_X_CARRIAGE
 
-#if ENABLED(DEBUG_LEVELING_FEATURE)
-  void print_xyz(const char* prefix, const float x, const float y, const float z) {
-    SERIAL_ECHO(prefix);
-    SERIAL_ECHOPAIR(": (", x);
-    SERIAL_ECHOPAIR(", ", y);
-    SERIAL_ECHOPAIR(", ", z);
-    SERIAL_ECHOLNPGM(")");
-  }
-  void print_xyz(const char* prefix, const float xyz[]) {
-    print_xyz(prefix, xyz[X_AXIS], xyz[Y_AXIS], xyz[Z_AXIS]);
-  }
-  #define DEBUG_POS(PREFIX,VAR) do{ SERIAL_ECHOPGM(PREFIX); print_xyz(" > " STRINGIFY(VAR), VAR); }while(0)
-#endif
-
 static void set_axis_is_at_home(AxisEnum axis) {
   #if ENABLED(DEBUG_LEVELING_FEATURE)
     if (DEBUGGING(LEVELING)) {
@@ -1303,18 +1303,33 @@ inline void set_homing_bump_feedrate(AxisEnum axis) {
   }
   feedrate = homing_feedrate[axis] / hbd;
 }
+//
+// line_to_current_position
+// Move the planner to the current position from wherever it last moved
+// (or from wherever it has been told it is located).
+//
 inline void line_to_current_position() {
   plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], feedrate / 60, active_extruder);
 }
 inline void line_to_z(float zPosition) {
   plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], zPosition, current_position[E_AXIS], feedrate / 60, active_extruder);
 }
+//
+// line_to_destination
+// Move the planner, not necessarily synced with current_position
+//
 inline void line_to_destination(float mm_m) {
   plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], mm_m / 60, active_extruder);
 }
 inline void line_to_destination() {
   line_to_destination(feedrate);
 }
+/**
+ * sync_plan_position
+ * Set planner / stepper positions to the cartesian current_position.
+ * The stepper code translates these coordinates into step units.
+ * Allows translation between steps and units (mm) for cartesian & core robots
+ */
 inline void sync_plan_position() {
   #if ENABLED(DEBUG_LEVELING_FEATURE)
     if (DEBUGGING(LEVELING)) DEBUG_POS("sync_plan_position", current_position);
@@ -1763,7 +1778,7 @@ static void setup_for_endstop_move() {
     #endif // Z_PROBE_ALLEN_KEY
 
     #if ENABLED(FIX_MOUNTED_PROBE)
-      // Noting to be done. Just set z_probe_is_active
+      // Nothing to do here. Just clear z_probe_is_active
     #endif
 
     z_probe_is_active = false;
@@ -3097,7 +3112,7 @@ inline void gcode_G28() {
 
     #if ENABLED(Z_PROBE_SLED)
       dock_sled(false); // engage (un-dock) the Z probe
-    #elif ENABLED(Z_PROBE_ALLEN_KEY) || (ENABLED(DELTA) && SERVO_LEVELING)
+    #elif ENABLED(MECHANICAL_PROBE) || (ENABLED(DELTA) && SERVO_LEVELING)
       deploy_z_probe();
     #endif
 
@@ -3116,8 +3131,8 @@ inline void gcode_G28() {
       #if ENABLED(DELTA)
         delta_grid_spacing[0] = xGridSpacing;
         delta_grid_spacing[1] = yGridSpacing;
-        float z_offset = zprobe_zoffset;
-        if (code_seen(axis_codes[Z_AXIS])) z_offset += code_value();
+        float zoffset = zprobe_zoffset;
+        if (code_seen(axis_codes[Z_AXIS])) zoffset += code_value();
       #else // !DELTA
         /**
          * solve the plane equation ax + by + d = z
@@ -3207,7 +3222,7 @@ inline void gcode_G28() {
             eqnAMatrix[probePointCounter + 2 * abl2] = 1;
             indexIntoAB[xCount][yCount] = probePointCounter;
           #else
-            bed_level[xCount][yCount] = measured_z + z_offset;
+            bed_level[xCount][yCount] = measured_z + zoffset;
           #endif
 
           probePointCounter++;
@@ -3357,7 +3372,7 @@ inline void gcode_G28() {
       #if ENABLED(Z_PROBE_ALLEN_KEY) || SERVO_LEVELING
         stow_z_probe();
       #elif Z_RAISE_AFTER_PROBING > 0
-        raise_z_after_probing(); // ???
+        raise_z_after_probing(); // for non Allen Key probes, such as simple mechanical probe
       #endif
     #else // !DELTA
       if (verbose_level > 0)
@@ -5150,7 +5165,12 @@ inline void gcode_M206() {
 #if EXTRUDERS > 1
 
   /**
-   * M218 - set hotend offset (in mm), T<extruder_number> X<offset_on_X> Y<offset_on_Y>
+   * M218 - set hotend offset (in mm)
+   *
+   *   T<tool>
+   *   X<xoffset>
+   *   Y<yoffset>
+   *   Z<zoffset> - Available with DUAL_X_CARRIAGE
    */
   inline void gcode_M218() {
     if (setTargetedHotend(218)) return;
@@ -6184,10 +6204,10 @@ inline void gcode_T(uint8_t tmp_extruder) {
             // Offset extruder, make sure to apply the bed level rotation matrix
             vector_3 tmp_offset_vec = vector_3(extruder_offset[X_AXIS][tmp_extruder],
                                                extruder_offset[Y_AXIS][tmp_extruder],
-                                               extruder_offset[Z_AXIS][tmp_extruder]),
+                                               0),
                      act_offset_vec = vector_3(extruder_offset[X_AXIS][active_extruder],
                                                extruder_offset[Y_AXIS][active_extruder],
-                                               extruder_offset[Z_AXIS][active_extruder]),
+                                               0),
                      offset_vec = tmp_offset_vec - act_offset_vec;
 
             #if ENABLED(DEBUG_LEVELING_FEATURE)
