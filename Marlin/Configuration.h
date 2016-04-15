@@ -247,9 +247,14 @@
   //#define  DEFAULT_Kd 114
 
   // AO-Hexagon (24V)
-  #define  DEFAULT_Kp 28.79
-  #define  DEFAULT_Ki 1.91
-  #define  DEFAULT_Kd 108.51
+  //#define  DEFAULT_Kp 28.79
+  //#define  DEFAULT_Ki 1.91
+  //#define  DEFAULT_Kd 108.51
+
+  // KJJ Values for 24v AO-Hexagon
+  #define  DEFAULT_Kp 25.77
+  #define  DEFAULT_Ki 1.74
+  #define  DEFAULT_Kd 95.64
   
   // MakerGear
   //#define  DEFAULT_Kp 7.0
@@ -611,9 +616,10 @@ const bool Z_MIN_PROBE_ENDSTOP_INVERTING = true; // set to true to invert the lo
   //    |           |
   //    O-- FRONT --+
   //  (0,0)
-  #define X_PROBE_OFFSET_FROM_EXTRUDER 10  // X offset: -left  +right  [of the nozzle]
-  #define Y_PROBE_OFFSET_FROM_EXTRUDER 10  // Y offset: -front +behind [the nozzle] 
-  #define Z_PROBE_OFFSET_FROM_EXTRUDER 0   // Z offset: -below +above  [the nozzle]
+  
+  #define X_PROBE_OFFSET_FROM_EXTRUDER 0  // X offset: -left  +right  [of the nozzle]
+  #define Y_PROBE_OFFSET_FROM_EXTRUDER 0  // Y offset: -front +behind [the nozzle] 
+  #define Z_PROBE_OFFSET_FROM_EXTRUDER -1.6   // Z offset: -below +above  [the nozzle]
 
   #define XY_TRAVEL_SPEED 8000         // X and Y axis travel speed between probes, in mm/min.
 
@@ -699,7 +705,7 @@ const bool Z_MIN_PROBE_ENDSTOP_INVERTING = true; // set to true to invert the lo
 #define DEFAULT_TRAVEL_ACCELERATION   2400    // X, Y, Z acceleration in mm/s^2 for travel (non printing) moves
 
 // The speed change that does not require acceleration (i.e. the software might assume it can be done instantaneously)
-#define DEFAULT_XYJERK                20.0    // (mm/sec)
+#define DEFAULT_XYJERK                15.0    // (mm/sec)
 #define DEFAULT_ZJERK                 0.4     // (mm/sec)
 #define DEFAULT_EJERK                 5.0    // (mm/sec)
 
