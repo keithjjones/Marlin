@@ -571,7 +571,7 @@ const bool Z_MIN_PROBE_ENDSTOP_INVERTING = true; // set to true to invert the lo
   #if ENABLED(AUTO_BED_LEVELING_GRID)
 
     #define LEFT_PROBE_BED_POSITION 20
-    #define RIGHT_PROBE_BED_POSITION 225
+    #define RIGHT_PROBE_BED_POSITION 235
     #define FRONT_PROBE_BED_POSITION 20
     #define BACK_PROBE_BED_POSITION 230
 
@@ -613,7 +613,7 @@ const bool Z_MIN_PROBE_ENDSTOP_INVERTING = true; // set to true to invert the lo
   //  (0,0)
   #define X_PROBE_OFFSET_FROM_EXTRUDER -40  // X offset: -left  [of the nozzle] +right
   #define Y_PROBE_OFFSET_FROM_EXTRUDER -45  // Y offset: -front [of the nozzle] +behind
-  #define Z_PROBE_OFFSET_FROM_EXTRUDER -2.0   // Z offset: -below [the nozzle] (always negative!)
+  #define Z_PROBE_OFFSET_FROM_EXTRUDER -3.25   // Z offset: -below [the nozzle] (always negative!)
 
   #define XY_TRAVEL_SPEED 8000         // X and Y axis travel speed between probes, in mm/min.
 
